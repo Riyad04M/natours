@@ -34,6 +34,9 @@ const fileFilter = (req, file, cb) => {
   cb(new AppError('Not an image! please upload only images. ', 400), false);
 };
 
+
+//git comment
+
 const uploadImage = multer({ fileFilter, storage });
 exports.uploadUserImage = uploadImage.single('photo');
 exports.resizeUserImage = catchAsync(async (req, res, next) => {
