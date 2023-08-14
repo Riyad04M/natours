@@ -1,14 +1,23 @@
 import '@babel/polyfill';
 import { login, logout } from './login';
+import { signup } from './signup';
 import { updateData, updatePassword } from './updateUserData';
 
-let email, password;
 document.querySelector('.form--login')?.addEventListener('submit', (e) => {
   e.preventDefault();
-  email = document.getElementById('email').value;
-  password = document.getElementById('password').value;
-  console.log('hi i am gay', email, password);
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
   login(email, password);
+});
+
+document.querySelector('.form--signup')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('signup-name').value;
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  signup(name, email, password, confirmPassword);
 });
 
 document.querySelector('.nav__el--logout')?.addEventListener('click', logout);

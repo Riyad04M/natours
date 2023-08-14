@@ -43,10 +43,12 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordTokenExpires: Date,
   active: { type: Boolean, default: true, select: false },
+  verified: { type: Boolean, default: false },
 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+  console.log(this.password);
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
 
@@ -65,7 +67,6 @@ userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
-  console.log(candidatePassword, userPassword);
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 

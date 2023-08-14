@@ -10,24 +10,32 @@ module.exports = class Email {
     this.url = url;
   }
   newTransport() {
-    if (true) {
-      return nodemailer.createTransport({
-        service: 'SendGrid',
+    let transporter;
+    if ( process.env.NODE_ENV === 'production') {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
         auth: {
-          user: process.env.NODE_ENV.SENDGRID_USERNAME,
-          pass: process.env.NODE_ENV.SENDGRID_PASSWORD,
+          user: 'riyadmh05@gmail.com',
+          pass: 'skduwwhxlaitykzw',
+        },
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        auth: {
+          user: process.env.EMAIL_USERNAME,
+          pass: process.env.EMAIL_PASSWORD,
         },
       });
     }
-
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    transporter
+      .verify()
+      .then(() => {
+        console.log('Server is ready to take our messages');
+      })
+      .catch(console.error);
+    return transporter;
   }
 
   async send(template, subject) {
@@ -48,6 +56,10 @@ module.exports = class Email {
     //   // 3) send the  email
 
     await this.newTransport().sendMail(mailOptions);
+  }
+
+  async verifyEmail() {
+    await this.send('verify' , 'Verify Your Email')
   }
 
   async sendWelcome() {

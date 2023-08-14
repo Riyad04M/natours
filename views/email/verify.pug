@@ -1,0 +1,21 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p Hello and welcome to Natours! We are so happy that you have joined us and we can't wait to show you all the amazing features and benefits that we have to offer.
+  p  But before you can start exploring, we need to verify your email address. This is a simple and quick process that will ensure your account security and allow us to communicate with you better. 🎉🙏
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${url}`, target='_blank') Verify Your Account
+  p If you have any questions or issues, please feel free to contact our support team at any time. We are always here to help you and make your experience with us as smooth and satisfying as possible.
+  p Sincerely.
+  p - Mohammed Riyad, CEO
+
+
+

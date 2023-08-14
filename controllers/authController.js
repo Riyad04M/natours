@@ -1,12 +1,12 @@
 const User = require('./../model/userModel');
+const UserVerification = require('./../model/userVerification');
 const catchAsync = require('../Ulti/catchAsync');
 const AppError = require('../Ulti/appError');
 const Email = require('../Ulti/email');
 const { promisify } = require('util');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const { stat } = require('fs');
-
+const { v4: uuidv4 } = require('uuid');
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES,
@@ -22,24 +22,113 @@ const createSendToken = (user, statusCode, res) => {
   };
   if (process.nextTick.NODE_ENV === 'production') cookieOptions.secure = true;
   res.cookie('jwt', token, cookieOptions);
-  user.password = undefined;
-  res.status(statusCode).json({
-    status: 'success',
-    token,
-    user,
-  });
+  if (!user.verified) {
+    user.verified = true;
+    user
+      .save({ validateBeforeSave: false })
+      .then(() => {
+        return res.status(200).render('verified', {
+          title: 'Welcome to Natours',
+          token,
+          user,
+        });
+      })
+      .catch((err) => {
+        console.log('ana 7mar');
+        console.log(err.stack);
+        console.log(err.message);
+      });
+  } else {
+    res.status(statusCode).json({
+      status: 'success',
+      token,
+      user,
+    });
+  }
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
+  const { name, email, password, passwordConfirm } = req.body;
+
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
+    name,
+    email,
+    password,
+    passwordConfirm,
+    role: 'admin',
+    verified: false,
   });
-  const Url = `${req.protocol}://${req.get('host')}/me`;
-  await new Email(newUser, Url).sendWelcomeF();
-  createSendToken(newUser, 201, res);
+  const uniqueString = uuidv4() + newUser._id;
+
+  await UserVerification.create({
+    id: newUser._id,
+    uniqueString,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 1000 * 60 * 3,
+  });
+
+  const Url = `${req.protocol}://${req.get('host')}/verifyEmail/${
+    newUser._id
+  }/${uniqueString}`;
+
+  await new Email(newUser, Url).verifyEmail();
+  res.status(200).json({
+    status: 'pending',
+    message: 'Verify Your Email',
+    user: newUser._id,
+  });
+  // createSendToken(newUser, 201, res);
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  // getting id and uniStr from params
+  // getting user
+  // getting userVer by the id passed if not found
+  // unvalid id passed return error
+  //  checking for exipring time
+  //  if its expired
+  // ***  we delete both user and verUser from db
+  // validat the uniStr if its valid we set the user verifed to true and assign a token and delete the userVer
+  // if not we repeat step ***
+  const { id, uniqueString } = req.params;
+  const userVerification = await UserVerification.findOne({ id });
+  const user = await User.findOne({ _id: id });
+  if (!userVerification && user) {
+    return next(new AppError('You already verified Your Account', 409));
+    // return res.status(200).json({
+    //   status: 'success',
+    //   message: 'you are signed In now welcome to our App',
+    // });
+  }
+
+  if (!userVerification) {
+    next(new AppError('Invalid User Id. Not found', 404));
+  }
+  if (Date.now() > userVerification.expiresAt) {
+    await UserVerification.findOneAndDelete({ id });
+    await User.findOneAndDelete({ _id: id });
+    return next(
+      new AppError('link has expired. please try signing up again', 410)
+    );
+  }
+  if (
+    !(await userVerification.compareUniqueStr(
+      uniqueString,
+      userVerification.uniqueString
+    ))
+  ) {
+    await UserVerification.findOneAndDelete({ id });
+    await User.findOneAndDelete({ _id: id });
+    return next(
+      new AppError('unvalid Token. please try signing up again', 401)
+    );
+  }
+  // user.verified = true;
+  // await user.save({ validateBeforeSave: false });
+  await userVerification.deleteOne({ id });
+  const Url = `${req.protocol}://${req.get('host')}/Me`;
+  await new Email(user, Url).sendWelcome();
+  createSendToken(user, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -49,8 +138,17 @@ exports.login = catchAsync(async (req, res, next) => {
   ///
   console.log(email);
   const user = await User.findOne({ email }).select('+password');
-  console.log(user);
 
+  if (!user.verified) {
+    await UserVerification.findOneAndDelete({ id: user._id });
+    await User.findOneAndDelete({ _id: user._id });
+    return next(
+      new AppError(
+        " You havn't verified your email. please sign up again ",
+        401
+      )
+    );
+  }
   if (!user || !(await user.correctPassword(password, user.password)))
     return next(new AppError('incorrect email or password', 401));
 
@@ -163,6 +261,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email });
 
   if (!user) return next(new AppError('there is no user with that email', 404));
+
+  if (!user.verified) {
+    await UserVerification.findOneAndDelete({ id: user._id });
+    await User.findOneAndDelete({ _id: user._id });
+    return next(
+      new AppError(
+        " You havn't verified your email. please sign up again ",
+        401
+      )
+    );
+  }
 
   // 2) create token to reset the password
   console.log('*********************************************');
