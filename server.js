@@ -18,17 +18,19 @@ mongoose
   .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useFindAndModify: false,
+    // useFindAndModify: false,
+    useFindAndModify: true,
     autoIndex: true,
+   
   })
   .then((con) => {
     // console.log(con.connection);
     console.log(`connected to db`);
   });
 
-const server = app.listen(3000, () => {
+const server = app.listen(process.env.PORT, () => {
   console.log('listening to port 3000...');
-});
+});  
 
 process.on('unhandledRejection', (err) => {
   console.log('Unhandled Rejection! 😭 shutting down...');
