@@ -11,9 +11,15 @@ router.get(
   authController.isLoggedIn,
   viewsController.getOverview
 );
-router.get('/tour/:slug', authController.isLoggedIn, viewsController.getTour);
+router.get('/tour/:slug', viewsController.getTour);
 router.get('/login', authController.isLoggedIn, viewsController.getLoginForm);
-router.get('/signup', viewsController.getSignupForm);
+router.get('/signup', authController.isLoggedIn, viewsController.getSignupForm);
+router.get('/forgotMyPassword', viewsController.getForgotPassForm);
+router.get(
+  '/resetPassword/:token',
+  authController.validateResetToken,
+  viewsController.getResetForm
+);
 
 router.get('/me', authController.protect, viewsController.getAccount);
 

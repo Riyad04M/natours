@@ -4,11 +4,8 @@ import { showAlert } from './alert';
 
 export const updateData = async (data) => {
   try {
-
-    const res = await axios.patch(
-      '/api/v1/users/updateMe',
-      data
-    );
+    console.log('my data is : ', data);
+    const res = await axios.patch('/api/v1/users/updateMe', data);
 
     console.log(res);
     if (res.data.status === 'success') {
@@ -26,14 +23,11 @@ export const updatePassword = async (
 ) => {
   console.log(oldPassword, newPassword, confirmPassword);
   try {
-    const res = await axios.patch(
-      '/api/v1/users/changePassword',
-      {
-        oldPassword,
-        newPassword,
-        confirmPassword,
-      }
-    );
+    const res = await axios.patch('/api/v1/users/changePassword', {
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    });
 
     console.log(res);
     if (res.data.status === 'success') {

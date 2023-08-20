@@ -43,6 +43,7 @@ app.set('views', path.join(__dirname, 'views'));
 //   })
 // );
 
+
 // Development logging
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
@@ -113,7 +114,7 @@ app.use((req, res, next) => {
   //   status: 'fail',
   //   message: `can't find ${req.originalUrl} on this server`,
   // });
-  
+
   next(new AppError(`can't find ${req.originalUrl} on this server`, 404));
 });
 

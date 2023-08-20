@@ -4,6 +4,7 @@ const factor = require('./factorController');
 const AppError = require('../Ulti/appError');
 const multer = require('multer');
 const sharp = require('sharp');
+const { findOne } = require('../model/tourModel');
 const filterFields = (obj, ...fields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -34,7 +35,6 @@ const fileFilter = (req, file, cb) => {
   cb(new AppError('Not an image! please upload only images. ', 400), false);
 };
 
-
 //git comment
 
 const uploadImage = multer({ fileFilter, storage });
@@ -64,10 +64,23 @@ exports.getMe = (req, res, next) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  const filterdObj = filterFields(req.body, 'name', 'email');
-  filterdObj.photo = req.file?.filename;
+  const filterdObj = filterFields(req.body, 'name', 'email', 'password');
+  console.log(filterdObj);
 
-  const updatedUser = await User.findByIdAndUpdate(req.user._id, filterdObj, {
+  const user = await User.findOne(req.user._id).select('+password');
+  if (!filterdObj.password) {
+    return next(new AppError('please enter your current password'));
+  }
+  if (!(await user.correctPassword(filterdObj.password, user.password))) {
+    return next(new AppError('incorrect password'));
+  }
+
+  const newData = { email: filterdObj.email, name: filterdObj.name };
+  if (req.file) {
+    newData.photo = req.file?.filename;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, newData, {
     new: true,
     runValidators: true,
   });

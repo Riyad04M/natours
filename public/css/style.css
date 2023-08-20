@@ -128,6 +128,28 @@ body {
   line-height: 1.3;
   display: inline-block;
 }
+.forgot-password {
+  font-size: 1.75rem;
+  text-transform: uppercase;
+  font-weight: 400;
+  background-image: -webkit-gradient(
+    linear,
+    left top,
+    right top,
+    from(#7dd56f),
+    to(#28b487)
+  );
+  background-image: linear-gradient(to right, #7dd56f, #28b487);
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: 0.1rem;
+  line-height: 1.3;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+.forgot-password:hover {
+  border-bottom: solid #20bf6b 1px;
+}
 .heading-secondary--error {
   background-image: -webkit-gradient(
     linear,
@@ -1224,7 +1246,7 @@ body {
 
 .login-form {
   margin: 0 auto;
-  
+
   max-width: 55rem;
   background-color: #fff;
   -webkit-box-shadow: 0 2.5rem 8rem 2rem rgba(0, 0, 0, 0.06);

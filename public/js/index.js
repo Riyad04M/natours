@@ -1,9 +1,11 @@
 import '@babel/polyfill';
 import { login, logout } from './login';
-import { signup } from './signup';
+
+import { signup, forgotPassword, resetPassword } from './signup';
 import { updateData, updatePassword } from './updateUserData';
 
-document.querySelector('.form--login')?.addEventListener('submit', (e) => {
+console.log('why this is kosa hi mom');
+document.getElementById('form--login')?.addEventListener('submit', (e) => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -27,6 +29,7 @@ document.querySelector('.form-user-data')?.addEventListener('submit', (e) => {
   const form = new FormData();
   form.append('email', document.getElementById('email').value);
   form.append('name', document.getElementById('name').value);
+  form.append('password', document.getElementById('password').value);
   form.append('photo', document.getElementById('photo').files[0]);
 
   updateData(form);
@@ -48,3 +51,19 @@ document
 
     document.querySelector('.btn--save-password').textContent = 'save password';
   });
+
+document.getElementById('forgot-password')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  console.log('nice boobs');
+  const email = document.getElementById('email').value;
+  forgotPassword(email);
+});
+document.getElementById('reset-password')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  console.log('nice ass');
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const token = window.location.href.split('/')[4];
+
+  resetPassword(password, confirmPassword, token);
+});

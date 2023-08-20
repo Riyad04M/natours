@@ -36,18 +36,35 @@ exports.getTour = catchAsync(async (req, res, next) => {
 });
 
 exports.getLoginForm = (req, res) => {
+  if (res.locals.user) {
+    return res.redirect('/');
+  }
   res.status(200).render('login', {
     title: 'Log into your account',
   });
 };
 exports.getSignupForm = (req, res) => {
+  if (res.locals.user) {
+    return res.redirect('/');
+  }
   res.status(200).render('signup', {
     title: 'Log into your account',
   });
 };
+exports.getForgotPassForm = (req , res , next) => {
+  res.status(200).render('forgotPassword' , {
+    title : 'Forgot Your Password' , 
+  })
+}
+exports.getResetForm = (req , res , next) => {
+
+  res.status(200).render('resetPassword' , {
+    title : 'Reset Your Password' , 
+  })
+}
 exports.pendingReq = (req, res) => {
   console.log(req.body);
-  if(!req.body.email) {
+  if (!req.body.email) {
     console.log('hi mom');
   }
 
@@ -57,6 +74,7 @@ exports.pendingReq = (req, res) => {
 };
 
 exports.getAccount = (req, res) => {
+  console.log('anateexzz', req.user);
   res.status(200).render('account', {
     title: 'Your account',
   });

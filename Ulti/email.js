@@ -3,11 +3,11 @@ const pug = require('pug');
 const htmlToText = require('html-to-text');
 
 module.exports = class Email {
-  constructor(user, url) {
+  constructor(user, ...url) {
     this.firstName = user.name.split(' ')[0];
     this.to = user.email;
     this.from = 'Mohammed Riyad <riyadmh05@gmail.com>';
-    this.url = url;
+    [this.viewUrl , this.apiUrl] = url;
   }
   newTransport() {
     let transporter;
@@ -42,7 +42,8 @@ module.exports = class Email {
     // 1) render html based on pug template
     const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
       firstName: this.firstName,
-      url: this.url,
+      viewUrl: this.viewUrl,
+      apiUrl : this.apiUrl ,
       subject,
     });
     // 2)   define email options
